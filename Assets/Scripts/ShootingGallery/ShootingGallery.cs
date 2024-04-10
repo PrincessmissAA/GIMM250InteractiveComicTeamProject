@@ -14,7 +14,6 @@ public class ShootingGallery : MonoBehaviour
     [SerializeField] private Text shots;
     [SerializeField] private Text reloads;
     [SerializeField] private Text health;
-    [SerializeField] private Text vector;
 
     private const int TIME_LIMIT = 30;
     private int timeRemaining;
@@ -53,7 +52,6 @@ public class ShootingGallery : MonoBehaviour
         time.text = "Time: " + timeRemaining;
         targetSpeed.text = "Speed: " + target.GetSpeed();
         vectorArrow.transform.rotation = Quaternion.Euler(0, 0, target.GetVector());
-        vector.text = "Vector:\n " + target.GetVector();
         shots.text = "Shots: " + shooter.GetShotsRemaining();
         reloads.text = "Reload: " + shooter.GetReloadsRemaining();
         health.text = "HEALTH: " + target.GetHealth();
