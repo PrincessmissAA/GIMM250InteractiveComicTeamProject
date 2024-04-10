@@ -176,8 +176,19 @@ public class Target : MonoBehaviour
      */
     public int GetVector()
     {
-        double radians = Math.Atan2(Math.Abs(speedY), Math.Abs(speedX));
+        double radians = 0;
+        
+        if (speedX != 0)
+        {
+            radians = Math.Atan2(Math.Abs(speedY), Math.Abs(speedX));
+        }
+        else
+        {
+            radians = Math.PI / 2;
+        }
+
         double degrees = radians * (180 / Math.PI);
+
         if(speedX < 0)
         {
             if(speedY < 0)
