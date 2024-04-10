@@ -91,21 +91,24 @@ public class Target : MonoBehaviour
      */
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Collision detected");
         String boundary = collision.gameObject.tag;
+        Debug.Log(boundary + " collision");
 
         switch (boundary)
         {
             //TODO: Build boundary trigger colliders and assign tags: top/bottom = "vertical", left/right = "horizontal"
             case "vertical":
                 speedY = -speedY;
+                Debug.Log("Reverse Y");
                 break;
             case "horizontal":
                 speedX = -speedX;
+                Debug.Log("Reverse X");
                 break;
             default: // Fail-safe reverses both directions if collider tag is not caught.
                 speedX = -speedX;
                 speedY = -speedY;
+                Debug.Log("Reverse Both: BAD BAD BAD!");
                 break;
         }
 
@@ -125,6 +128,7 @@ public class Target : MonoBehaviour
      */
     private void ChangeMovement()
     {
+        Debug.Log("Change Movement");
         speedX = RandomSpeed();
         speedY = RandomSpeed();
         changeDelay = RandomDelay();
@@ -164,7 +168,7 @@ public class Target : MonoBehaviour
         double y2 = Math.Pow(speedY, 2);
         double speed = Math.Round(Math.Sqrt(x2 + y2), 2);
 
-        return speed;
+        return Math.Floor(speed*10)/10;
     }
 
     /** Return the degree vector direction of travel of the target
@@ -172,9 +176,26 @@ public class Target : MonoBehaviour
      */
     public int GetVector()
     {
-        double radians = Math.Atan2(speedY, speedX);
+        double radians = Math.Atan2(Math.Abs(speedY), Math.Abs(speedX));
         double degrees = radians * (180 / Math.PI);
-
+        if(speedX < 0)
+        {
+            if(speedY < 0)
+            {
+                degrees += 180;
+            }
+            else
+            {
+                degrees = 180 - degrees;
+            }
+        }
+        else
+        {
+            if(speedY < 0)
+            {
+                degrees = 360 - degrees;
+            }
+        }
         return (int)degrees;
     }
 
@@ -209,6 +230,14 @@ public class Target : MonoBehaviour
         {
             return false;
         }
+    }
+
+    /** Return remaining hit points
+     * @return int
+     */
+    public int GetHealth()
+    {
+        return hitPoints;
     }
 
     #endregion
