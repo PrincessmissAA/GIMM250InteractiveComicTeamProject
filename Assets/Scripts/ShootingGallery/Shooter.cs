@@ -1,19 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-/** Control script for the Target in the Quantum Shooter mini-game.
+/** Control script for the shooter in the Quantum Shooter mini-game.
  *  USE:
  *      - Create a game object for the shooter's crosshairs
  *          - Include components: RigidBody2D, Animator, SpriteRenderer
  *      - Add this script to the shooter game object
  *  TODO:
- *      - HUD to display health and ammo (Or move to ShootingGallery class)
  *      - Write Aim method to move the crosshairs
  *      - Finish Shoot() method that looks for target and decrements ammo
  *      TEST:
- *          
+ *          -
  *  BUGS:
  *      - Has not been tested
  *  CHANGES:
@@ -25,6 +25,7 @@ using UnityEngine.UIElements;
 
 public class Shooter : MonoBehaviour
 {
+    [SerializeField] GameObject gameArea;
     private Rigidbody2D aimBody; // Used to move the crosshairs
     private SpriteRenderer aimSprite; // Show's the crosshairs
     private Animator aimAnimator; // call to shooting/reloading animation (2D graphics should not require separate projectile animation)
@@ -81,6 +82,7 @@ public class Shooter : MonoBehaviour
             shots--;
             canShoot = false;
             // TODO: check for hit
+            
             // TODO: call animation
             if(shots > 0)
             {

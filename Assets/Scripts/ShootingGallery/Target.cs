@@ -12,23 +12,22 @@ using UnityEngine;
  *      - Create a game area as the parent object for the target
  *  TODO:
  *      - Create damage method(s)
- *      - Add sprite renderer call to Move() method
- *      TEST:
+ *      - Add sprite renderer method
+ *      - Add check for window resize during the game? (EstablishArea(), EstablishTarget())
+ *      - Resize target based on window size (EstablishTarget())
+ *      READY TO TEST:
  *          - Movement
  *              - Object moves? (Expected: yes) YES
  *              - Movement changes speed and direction intermittently? (Expected: yes) YES
- *              - Movement reverses if it encounters a boundary? (Expected: yes) YES
- *          - Sprite
- *              - Does toggling the sprite visiblity completely screw up the color pallette? (Expected: no)
- *              - Does toggling the sprite visibility toggle the sprite visibility? (Expected: yes)
+ *              - Movement reverses if it reaches the edge of the game area? (Expected: yes) YES
  *  BUGS:
- *      - Has not been tested
+ *      - 
  *  CHANGES:
  *      - Completely redesigned the code for a target built into the Unity Canvas.
  *      - Removed need for boundary colliders. Now uses game area dimensions to directly reassign speeds.
  *      
  * @author Joe Shields
- * Last Updated: 6 Mar 24 @ 4:10p
+ * Last Updated: 14 Apr 24 @ 1700
  */
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -72,7 +71,7 @@ public class Target : MonoBehaviour
         hitPoints = MAX_HIT_POINTS; // Sets the hit point tracker
         EstablishGameArea(); // Gets the size of the game area and sets the BoxCollider2D dimensions to match
         EstablishTarget(); // Instantiates posX, posY, height, and width
-        PrintDebug(); // TODO: Delete
+
         ChangeMovement(); // Instantiates speedX, speedY, and changeDelay. Initiates self-renewing ChangeMovement call cycle.
     }
 
@@ -92,7 +91,6 @@ public class Target : MonoBehaviour
         gameHeight = gameArea.GetComponent<RectTransform>().rect.yMax - gameArea.GetComponent<RectTransform>().rect.yMin; // Gets the height of the game window
         gameWidth = gameArea.GetComponent<RectTransform>().rect.xMax - gameArea.GetComponent<RectTransform>().rect.xMin; // Gets the width of the game window
         gameArea.GetComponent<BoxCollider2D>().size.Set(gameWidth, gameHeight);
-        Debug.Log("Game Area Height x Width = " + gameHeight + " x " + gameWidth); // TODO: delete
     }
 
     /** Gets the position and dimensions of the target's box collider
@@ -112,16 +110,6 @@ public class Target : MonoBehaviour
 
     #region Control Methods
 
-    /** Running log of target position and size.
-     * TODO: delete
-     */
-    private void PrintDebug()
-    {
-        Debug.Log("Position (x,y) = (" + posX + ", " + posY + ") | Height x Width = " + height + " x " + width);
-
-        Invoke("PrintDebug", 3f);
-    }
-
     /** Changes the X and Y position of the target based on the current speed in both directions
      * Adjusts speed as needed to keep target in bounds
      */
@@ -133,23 +121,19 @@ public class Target : MonoBehaviour
         if ((posX - width / 2) < (-gameWidth / 2))
         {
             speedX = Math.Abs(speedX);
-            Debug.Log("Out of Bounds : left"); // TODO: delete
         }
         else if ((posX + width / 2) > (gameWidth / 2))
         {
             speedX = -Math.Abs(speedX);
-            Debug.Log("Out of Bounds : right"); // TODO: delete
         }
         // Vertical bounds check
         if ((posY - height / 2) < (-gameHeight / 2))
         {
             speedY = Math.Abs(speedY);
-            Debug.Log("Out of Bounds : bottom"); // TODO: delete
         }
         else if ((posY + height / 2) > (gameHeight / 2))
         {
             speedY = -Math.Abs(speedY);
-            Debug.Log("Out of Bounds : top"); // TODO: delete
         }
 
         // Move the target
@@ -229,6 +213,12 @@ public class Target : MonoBehaviour
     public int GetHealth()
     {
         return hitPoints;
+    }
+
+    /** Decrements target health*/
+    public void DamageTarget()
+    {
+        hitPoints--;
     }
 
     #endregion

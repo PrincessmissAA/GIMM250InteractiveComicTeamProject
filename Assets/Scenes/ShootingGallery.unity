@@ -727,6 +727,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shooter: {fileID: 556058348}
+  crosshairs: {fileID: 2800000, guid: 0584fee991252c34995018e71343714a, type: 3}
   target: {fileID: 8779119}
   vectorArrow: {fileID: 4578302}
   time: {fileID: 1926345507}
@@ -734,6 +735,8 @@ MonoBehaviour:
   shots: {fileID: 1760821523}
   reloads: {fileID: 1516688655}
   health: {fileID: 2065963293}
+  deadEndingSceneIndex: 0
+  aliveEndingSceneIndex: 0
 --- !u!61 &119693690
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -766,7 +769,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -2.3040924}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -777,7 +780,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1615.321, y: 925.7882}
+  m_Size: {x: 1615.321, y: 994.91187}
   m_EdgeRadius: 0
 --- !u!1 &192749745
 GameObject:
@@ -1095,6 +1098,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ba129ddd38d2a49aa41f2293f28d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameArea: {fileID: 119693685}
 --- !u!1 &556430092
 GameObject:
   m_ObjectHideFlags: 0
@@ -1177,7 +1181,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 556430095}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 556058348}
+        m_TargetAssemblyTypeName: Shooter, Assembly-CSharp
+        m_MethodName: Reload
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &556430095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1859,7 +1875,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1764155739}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 119693689}
+        m_TargetAssemblyTypeName: ShootingGallery, Assembly-CSharp
+        m_MethodName: EndGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1764155739
 MonoBehaviour:
   m_ObjectHideFlags: 0
