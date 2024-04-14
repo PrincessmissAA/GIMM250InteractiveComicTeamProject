@@ -9,11 +9,7 @@ using UnityEngine;
  *  USE:
  *      - Create a game object for the Target
  *      - Add this script to the Target game object
- *      - Create four (4) game objects for the boundaries
- *          - Include component: BoxCollider2D
- *          - Set tags: top/bottom = "vertical", left/right = "horizontal"
- *          - Within BoxCollider2D component, check box labeled "Is Trigger"
- *          - Place and size colliders to form a continuous box around the target area
+ *      - Create a game area as the parent object for the target
  *  TODO:
  *      - Create damage method(s)
  *      - Add sprite renderer call to Move() method
@@ -28,16 +24,8 @@ using UnityEngine;
  *  BUGS:
  *      - Has not been tested
  *  CHANGES:
- *      - Added component variables for Target game object
- *      - Removed internal references to boundary colliders. 
- *        (Uses OnTriggerEnter2D to reference tags.)
- *      - Organized Methods by region: Control, Helper, Mutator.
- *      - Removed "position" variables. Call Vector2 constructor directly.
- *      - Added visibility mutators: ToggleVisible() and IsVisible
- *        Uses alpha component of the sprite's color.
- *      - Converted speed to float
- *      - Added RequireComponent for necessary attributes
- *      - Added BoxCollider2D
+ *      - Completely redesigned the code for a target built into the Unity Canvas.
+ *      - Removed need for boundary colliders. Now uses game area dimensions to directly reassign speeds.
  *      
  * @author Joe Shields
  * Last Updated: 6 Mar 24 @ 4:10p
@@ -54,28 +42,37 @@ public class Target : MonoBehaviour
     private Rigidbody2D targetBody; // Used to move the target
     private BoxCollider2D targetCollider; // Detects collisions with the boundary
     private SpriteRenderer targetSprite; // Used to access the sprite flip / visibility
-    private Color visible;
-    private Color invisible;
     private Animator targetAnimator; // Used to animate target
-    private const int MAX_HIT_POINTS = 3;
-    private int hitPoints;
+    private const int MAX_HIT_POINTS = 3; // Number of hits needed to destroy the target
+    private int hitPoints; // Number of hits remaining before target is destroyed
+    private float posX; // Center X position of the target
+    private float posY; // Center Y position of the target
+    private float height; // Y-dimension of the target
+    private float width; // X-dimension of the target
 
     //Movement
-    private const float MAX_SPEED = 3f; // Sets the maximum bounds for the randomSpeed on any single axis.
-    private float speedX;
-    private float speedY;
+    private const float MAX_SPEED = 300f; // Sets the upper bound for the randomSpeed on any single axis.
+    private const float MIN_SPEED = 30f; // Sets the lower bound for the randomSpeed on any single axis.
+    private float speedX; // Horizontal movement speed
+    private float speedY; // Vertical movement speed
     private const float MAX_CHANGE_DELAY = 2f; // Sets the maximum time in seconds the target will move before changing directions
     private const float MIN_CHANGE_DELAY = 0.2f; // Sets the minimum time in seconds the target will move before changing directions
-    private float changeDelay;
+    private float changeDelay; // time delay between changes in movement
+
+    //Game Area
+    [SerializeField] GameObject gameArea; // The area to which the target is constrained (does not include the side panel)
+    private float gameHeight; // height of the game window
+    private float gameWidth; // width of the game window (does not include the side panel)
 
     void Start()
     {
         targetBody = GetComponent<Rigidbody2D>();
         targetSprite = GetComponent<SpriteRenderer>();
-        visible = new Color(targetSprite.color.r, targetSprite.color.g, targetSprite.color.b, 1);
-        invisible = new Color(targetSprite.color.r, targetSprite.color.g, targetSprite.color.b, 0);
         targetAnimator = GetComponent<Animator>();
-        hitPoints = MAX_HIT_POINTS;
+        hitPoints = MAX_HIT_POINTS; // Sets the hit point tracker
+        EstablishGameArea(); // Gets the size of the game area and sets the BoxCollider2D dimensions to match
+        EstablishTarget(); // Instantiates posX, posY, height, and width
+        PrintDebug(); // TODO: Delete
         ChangeMovement(); // Instantiates speedX, speedY, and changeDelay. Initiates self-renewing ChangeMovement call cycle.
     }
 
@@ -84,51 +81,90 @@ public class Target : MonoBehaviour
         Move();
     }
 
+    #region Instantiation methods
+
+    /** Gets/sets the dimensions of the game area and its BoxCollider2D 
+     * Call in Start()
+     * TODO: Call on window resize
+     */
+    private void EstablishGameArea()
+    {
+        gameHeight = gameArea.GetComponent<RectTransform>().rect.yMax - gameArea.GetComponent<RectTransform>().rect.yMin; // Gets the height of the game window
+        gameWidth = gameArea.GetComponent<RectTransform>().rect.xMax - gameArea.GetComponent<RectTransform>().rect.xMin; // Gets the width of the game window
+        gameArea.GetComponent<BoxCollider2D>().size.Set(gameWidth, gameHeight);
+        Debug.Log("Game Area Height x Width = " + gameHeight + " x " + gameWidth); // TODO: delete
+    }
+
+    /** Gets the position and dimensions of the target's box collider
+     * Call in Start()
+     * TODO: Scale with window size
+     * TODO: Call on window resize
+     */
+    private void EstablishTarget()
+    {
+        posX = GetComponent<RectTransform>().localPosition.x; // Gets the X position relative to the parent object (Game Area)
+        posY = GetComponent<RectTransform>().localPosition.y; // Gets the Y position relative to the parent object (Game Area)
+        height = GetComponent<BoxCollider2D>().bounds.size.y; // Gets the target height
+        width = GetComponent<BoxCollider2D>().bounds.size.x; // Gets the target width
+    }
+
+    #endregion
+
     #region Control Methods
 
-    /** Ensure target is in-bounds.
-     * Correct target movement if necessary.
+    /** Running log of target position and size.
+     * TODO: delete
      */
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void PrintDebug()
     {
-        String boundary = collision.gameObject.tag;
-        Debug.Log(boundary + " collision");
+        Debug.Log("Position (x,y) = (" + posX + ", " + posY + ") | Height x Width = " + height + " x " + width);
 
-        switch (boundary)
-        {
-            //TODO: Build boundary trigger colliders and assign tags: top/bottom = "vertical", left/right = "horizontal"
-            case "vertical":
-                speedY = -speedY;
-                Debug.Log("Reverse Y");
-                break;
-            case "horizontal":
-                speedX = -speedX;
-                Debug.Log("Reverse X");
-                break;
-            default: // Fail-safe reverses both directions if collider tag is not caught.
-                speedX = -speedX;
-                speedY = -speedY;
-                Debug.Log("Reverse Both: BAD BAD BAD!");
-                break;
-        }
-
+        Invoke("PrintDebug", 3f);
     }
 
     /** Changes the X and Y position of the target based on the current speed in both directions
-    * 
-    */
+     * Adjusts speed as needed to keep target in bounds
+     */
     private void Move()
     {
         //TODO: Add calls to sprite renderer
+
+        // Lateral bounds check
+        if ((posX - width / 2) < (-gameWidth / 2))
+        {
+            speedX = Math.Abs(speedX);
+            Debug.Log("Out of Bounds : left"); // TODO: delete
+        }
+        else if ((posX + width / 2) > (gameWidth / 2))
+        {
+            speedX = -Math.Abs(speedX);
+            Debug.Log("Out of Bounds : right"); // TODO: delete
+        }
+        // Vertical bounds check
+        if ((posY - height / 2) < (-gameHeight / 2))
+        {
+            speedY = Math.Abs(speedY);
+            Debug.Log("Out of Bounds : bottom"); // TODO: delete
+        }
+        else if ((posY + height / 2) > (gameHeight / 2))
+        {
+            speedY = -Math.Abs(speedY);
+            Debug.Log("Out of Bounds : top"); // TODO: delete
+        }
+
+        // Move the target
         targetBody.velocity = new Vector2(speedX, speedY);
+
+        // Update the target position vaiables
+        posX = GetComponent<RectTransform>().localPosition.x;
+        posY = GetComponent<RectTransform>().localPosition.y;
     }
 
-    /** Reassign all movement parameters. Speed is random.
-     * 
+    /** Reassign all movement parameters.
+     * Calls itself after a random delay.
      */
     private void ChangeMovement()
     {
-        Debug.Log("Change Movement");
         speedX = RandomSpeed();
         speedY = RandomSpeed();
         changeDelay = RandomDelay();
@@ -139,12 +175,17 @@ public class Target : MonoBehaviour
 
     #region Helper Methods
 
-    /** Generates a random value between +/-MAX_SPEED
+    /** Generates a random value between MIN_ and MAX_SPEED then determines if speed is + or -.
      * @return integer
      */
     private float RandomSpeed()
     {
-        return UnityEngine.Random.Range(-MAX_SPEED, MAX_SPEED + 1); // Correcting for non-inclusive max value
+        float newSpeed = UnityEngine.Random.Range(MIN_SPEED, MAX_SPEED + 1); // Positive speed only, Correcting for non-inclusive max value
+        if(UnityEngine.Random.Range(0,2) == 0) // Coin-toss for positive or negative speed.
+        {
+            newSpeed = -newSpeed;
+        }
+        return newSpeed;
     }
 
     /** Generates a random value between MIN_ and MAX_CHANGE_DELAY
@@ -168,7 +209,7 @@ public class Target : MonoBehaviour
         double y2 = Math.Pow(speedY, 2);
         double speed = Math.Round(Math.Sqrt(x2 + y2), 2);
 
-        return Math.Floor(speed*10)/10;
+        return speed;
     }
 
     /** Return the degree vector direction of travel of the target
@@ -176,75 +217,14 @@ public class Target : MonoBehaviour
      */
     public int GetVector()
     {
-        double radians = 0;
-        
-        if (speedX != 0)
-        {
-            radians = Math.Atan2(Math.Abs(speedY), Math.Abs(speedX));
-        }
-        else
-        {
-            radians = Math.PI / 2;
-        }
-
+        double radians = Math.Atan2(speedY, speedX);
         double degrees = radians * (180 / Math.PI);
 
-        if(speedX < 0)
-        {
-            if(speedY < 0)
-            {
-                degrees += 180;
-            }
-            else
-            {
-                degrees = 180 - degrees;
-            }
-        }
-        else
-        {
-            if(speedY < 0)
-            {
-                degrees = 360 - degrees;
-            }
-        }
         return (int)degrees;
     }
 
-    /** Toggle the visibility of the target sprite.
-     * Modifies the alpha value of the sprite's color
-     * @return boolean
-     */
-    public bool ToggleVisible()
-    {
-        if(targetSprite.color.Equals(visible))
-        {
-            targetSprite.color = invisible;
-            return false;
-        }
-        else
-        {
-            targetSprite.color = visible;
-            return true;
-        }
-    }
-
-    /** Return true if target is visible or false if it is not.
-     * @return boolean
-     */
-    public bool IsVisible()
-    {
-        if (targetSprite.color.Equals(visible))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /** Return remaining hit points
-     * @return int
+    /** Return the current health of the target
+     * @return int 
      */
     public int GetHealth()
     {
