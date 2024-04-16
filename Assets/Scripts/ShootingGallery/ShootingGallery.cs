@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-/** Control script for the Quantum Shooter mini-game user interface.
+/** Control script for the Quantum Shooter mini-game.
  *  USE:
  *      - Assign to any game object (e.g.- main camera)
  *      - Correlate the serialized fields with their appropriate UI elements, game objects, and scene indexes
@@ -24,10 +24,17 @@ using UnityEngine.UI;
  *  BUGS:
  *      - 
  *  CHANGES:
- *      - 
+ *      - Shifted code to improve performance. No longer updates HUD every frame:
+ *          - Moved target-related display code to Target.cs
+ *              - Health display only updates on health decrement
+ *              - Speed only updates on speed change
+ *              - Vector only updates on vector change
+ *          - Moved shooter-related display code to Shooter.cs
+ *              - Shots display only updates on shoot
+ *              - Reload display only updates on reload
  *      
  * @author Joe Shields
- * Last Updated: 14 Apr 24 @ 1300
+ * Last Updated: 16 Apr 24 @ 0945
  */
 
 public class ShootingGallery : MonoBehaviour
@@ -35,13 +42,8 @@ public class ShootingGallery : MonoBehaviour
     [SerializeField] private Shooter shooter;
     [SerializeField] private Texture2D crosshairs;
     [SerializeField] private Target target;
-    [SerializeField] private GameObject vectorArrow;
 
     [SerializeField] private Text time;
-    [SerializeField] private Text targetSpeed;
-    [SerializeField] private Text shots;
-    [SerializeField] private Text reloads;
-    [SerializeField] private Text health;
 
     [SerializeField] private int deadEndingSceneIndex;
     [SerializeField] private int aliveEndingSceneIndex;
@@ -59,18 +61,25 @@ public class ShootingGallery : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        UpdateHUD();
-        if(target.GetHealth() <= 0)
+        if(Input.GetMouseButtonDown(0)) //TODO: Add check for inside game area
         {
-            EndGame();
+            shooter.Shoot();
+            if (target.GetHealth() <= 0)
+            {
+                EndGame();
+            }
         }
     }
 
+    /** Decrements timer, updates time display, and checks end game condition
+     * Calls itself once every second.
+     */
     private void CountDownTimer()
     {
         timeRemaining--;
-        
-        if(timeRemaining <= 0)
+        time.text = "Time: " + timeRemaining;
+
+        if (timeRemaining <= 0)
         {
             EndGame();
         }
@@ -80,6 +89,8 @@ public class ShootingGallery : MonoBehaviour
         }
     }
 
+
+    // TODO: FIX THIS CURSOR CODE OR UPDATE IT IN Shooter.cs
     public void OnMouseEnter()
     {
         Cursor.SetCursor(crosshairs, Vector2.zero, CursorMode.Auto);
@@ -89,17 +100,6 @@ public class ShootingGallery : MonoBehaviour
     public void OnMouseExit()
     {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-    }
-
-    /** Calls Getter methods and updates all text fields. Also rotates vector arrow.*/
-    private void UpdateHUD()
-    {
-        time.text = "Time: " + timeRemaining;
-        targetSpeed.text = "Speed: " + target.GetSpeed();
-        vectorArrow.transform.rotation = Quaternion.Euler(0, 0, target.GetVector());
-        shots.text = "Shots: " + shooter.GetShotsRemaining();
-        reloads.text = "Reload: " + shooter.GetReloadsRemaining();
-        health.text = "HEALTH: " + target.GetHealth();
     }
 
     /** Loads the appropriate ending scene.

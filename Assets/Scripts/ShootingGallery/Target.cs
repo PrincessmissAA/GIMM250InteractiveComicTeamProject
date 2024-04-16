@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Runtime.ConstrainedExecution;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 
 /** Control script for the Target in the Quantum Shooter mini-game.
  *  USE:
@@ -11,10 +13,10 @@ using UnityEngine;
  *      - Add this script to the Target game object
  *      - Create a game area as the parent object for the target
  *  TODO:
- *      - Create damage method(s)
- *      - Add sprite renderer method
+ *      - Code Oberve() method fuctionality
  *      - Add check for window resize during the game? (EstablishArea(), EstablishTarget())
  *      - Resize target based on window size (EstablishTarget())
+ *          - Move call for EstablishTarget() inside EstablishArea()
  *      READY TO TEST:
  *          - Movement
  *              - Object moves? (Expected: yes) YES
@@ -25,14 +27,19 @@ using UnityEngine;
  *  CHANGES:
  *      - Completely redesigned the code for a target built into the Unity Canvas.
  *      - Removed need for boundary colliders. Now uses game area dimensions to directly reassign speeds.
+ *      - Added target-related display code from ShootingGallery.cs
+ *              - Health display only updates on health decrement
+ *              - Speed only updates on speed change
+ *              - Vector only updates on vector change
+ *      - Added method shell and baseline variables for Observe()
+ *      - Changed plan from target sprite to independent raw image
+ *      - Removed extraneous component requirements
  *      
  * @author Joe Shields
- * Last Updated: 14 Apr 24 @ 1700
+ * Last Updated: 16 Apr 24 @ 0945
  */
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(BoxCollider2D))]
 
 public class Target : MonoBehaviour
@@ -40,8 +47,10 @@ public class Target : MonoBehaviour
     //Target Object
     private Rigidbody2D targetBody; // Used to move the target
     private BoxCollider2D targetCollider; // Detects collisions with the boundary
-    private SpriteRenderer targetSprite; // Used to access the sprite flip / visibility
-    private Animator targetAnimator; // Used to animate target
+    
+
+    //Target Stats
+    [SerializeField] private Text health;
     private const int MAX_HIT_POINTS = 3; // Number of hits needed to destroy the target
     private int hitPoints; // Number of hits remaining before target is destroyed
     private float posX; // Center X position of the target
@@ -50,6 +59,8 @@ public class Target : MonoBehaviour
     private float width; // X-dimension of the target
 
     //Movement
+    [SerializeField] private Text speedDisplay;
+    [SerializeField] private GameObject vectorArrow;
     private const float MAX_SPEED = 300f; // Sets the upper bound for the randomSpeed on any single axis.
     private const float MIN_SPEED = 30f; // Sets the lower bound for the randomSpeed on any single axis.
     private float speedX; // Horizontal movement speed
@@ -63,15 +74,21 @@ public class Target : MonoBehaviour
     private float gameHeight; // height of the game window
     private float gameWidth; // width of the game window (does not include the side panel)
 
+    //Observation Mechanic
+    [SerializeField] private GameObject targetImage; // Used to access the sprite flip / visibility
+    private const float observationTime = 2f; // Sets the duration for which the display will be fixed after the Observe button is pressed
+    private bool isObserved;
+    private float observedX;
+    private float observedY;
+
     void Start()
     {
         targetBody = GetComponent<Rigidbody2D>();
-        targetSprite = GetComponent<SpriteRenderer>();
-        targetAnimator = GetComponent<Animator>();
+        isObserved = false;
         hitPoints = MAX_HIT_POINTS; // Sets the hit point tracker
+        health.text = "HEALTH: " + GetHealth();
         EstablishGameArea(); // Gets the size of the game area and sets the BoxCollider2D dimensions to match
         EstablishTarget(); // Instantiates posX, posY, height, and width
-
         ChangeMovement(); // Instantiates speedX, speedY, and changeDelay. Initiates self-renewing ChangeMovement call cycle.
     }
 
@@ -115,36 +132,39 @@ public class Target : MonoBehaviour
      */
     private void Move()
     {
-        //TODO: Add calls to sprite renderer
-
         // Lateral bounds check
         if ((posX - width / 2) < (-gameWidth / 2))
         {
             speedX = Math.Abs(speedX);
+            vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
         }
         else if ((posX + width / 2) > (gameWidth / 2))
         {
             speedX = -Math.Abs(speedX);
+            vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
         }
         // Vertical bounds check
         if ((posY - height / 2) < (-gameHeight / 2))
         {
             speedY = Math.Abs(speedY);
+            vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
         }
         else if ((posY + height / 2) > (gameHeight / 2))
         {
             speedY = -Math.Abs(speedY);
+            vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
         }
-
+        
         // Move the target
         targetBody.velocity = new Vector2(speedX, speedY);
+        
 
         // Update the target position vaiables
         posX = GetComponent<RectTransform>().localPosition.x;
         posY = GetComponent<RectTransform>().localPosition.y;
     }
 
-    /** Reassign all movement parameters.
+    /** Reassign all movement parameters and updates display.
      * Calls itself after a random delay.
      */
     private void ChangeMovement()
@@ -152,7 +172,28 @@ public class Target : MonoBehaviour
         speedX = RandomSpeed();
         speedY = RandomSpeed();
         changeDelay = RandomDelay();
+        speedDisplay.text = "Speed: " + GetSpeed(); // Update speed display
+        vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector()); // Update velocity display (also updated in Move() when bounds are reached)
         Invoke("ChangeMovement", changeDelay);
+    }
+
+    /** Create a static sprite where the target was at the point the button was pressed.
+     * Remove display for speed and velocity.
+     * Revert to normal after observeTime seconds.
+     */
+    public void Observe()
+    {
+        Debug.Log("Observe called");
+        isObserved = true;
+        observedX = posX;
+        observedY = posY;
+
+        //TODO: Add call to spriteRenderer and set appropriate flipX
+    }
+
+    private void resetIsObserved()
+    {
+
     }
 
     #endregion
@@ -215,10 +256,11 @@ public class Target : MonoBehaviour
         return hitPoints;
     }
 
-    /** Decrements target health*/
+    /** Decrements target health and updates display*/
     public void DamageTarget()
     {
         hitPoints--;
+        health.text = "HEALTH: " + GetHealth();
     }
 
     #endregion

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
 
 /** Control script for the shooter in the Quantum Shooter mini-game.
@@ -10,22 +11,32 @@ using UnityEngine.UIElements;
  *          - Include components: RigidBody2D, Animator, SpriteRenderer
  *      - Add this script to the shooter game object
  *  TODO:
- *      - Write Aim method to move the crosshairs
- *      - Finish Shoot() method that looks for target and decrements ammo
+ *      - Write Aim method to move the crosshairs (Cursor update in ShootingGallery.cs or sprite update here)
+ *      - Finish Shoot() method that looks for target and only functions in game area
+ *      - Add banner display to indicate when reload is required or in-progress
  *      TEST:
  *          -
  *  BUGS:
- *      - Has not been tested
+ *      - 
  *  CHANGES:
+ *      - Added shooter-related display code from ShootingGallery.cs
+ *              - Shots display only updates on shoot
+ *              - Reload display only updates on reload
  *      
  *      
  * @author Joe Shields
- * Last Updated: 5 Mar 24 @ 1:00p
+ * Last Updated: 16 Apr 24 @ 0945
  */
+
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(Animator))]
 
 public class Shooter : MonoBehaviour
 {
     [SerializeField] GameObject gameArea;
+    [SerializeField] private Text shotsDisplay;
+    [SerializeField] private Text reloadsDisplay;
     private Rigidbody2D aimBody; // Used to move the crosshairs
     private SpriteRenderer aimSprite; // Show's the crosshairs
     private Animator aimAnimator; // call to shooting/reloading animation (2D graphics should not require separate projectile animation)
@@ -48,7 +59,9 @@ public class Shooter : MonoBehaviour
         aimSprite = GetComponent<SpriteRenderer>();
         aimAnimator = GetComponent<Animator>();
         shots = MAX_SHOTS;
+        shotsDisplay.text = "Shots: " + GetShotsRemaining();
         reloads = MAX_RELOADS;
+        reloadsDisplay.text = "Reloads: " + GetReloadsRemaining();
         shotDelay = 1f;
         canShoot = true;
         reloadTime = 3f;
@@ -80,7 +93,9 @@ public class Shooter : MonoBehaviour
         if(shots > 0 && !isReloading)
         {
             shots--;
+            shotsDisplay.text = "Shots: " + GetShotsRemaining();
             canShoot = false;
+
             // TODO: check for hit
             
             // TODO: call animation
@@ -101,6 +116,7 @@ public class Shooter : MonoBehaviour
         if(reloads > 0 && !isReloading)
         {
             reloads--;
+            reloadsDisplay.text = "Reloads: " + GetReloadsRemaining();
             isReloading = true;
             // TODO: call animation
             Invoke("ReloadComplete", reloadTime);
@@ -127,6 +143,7 @@ public class Shooter : MonoBehaviour
     private void ReloadComplete()
     {
         shots = MAX_SHOTS;
+        shotsDisplay.text = "Shots: " + GetShotsRemaining();
         isReloading = false;
         ReadyNextShot();
     }
