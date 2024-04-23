@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 /** Control script for the Quantum Shooter mini-game.
  *  USE:
- *      - Assign to any game object (e.g.- main camera)
+ *      - Assign to game area object
  *      - Correlate the serialized fields with their appropriate UI elements, game objects, and scene indexes
  *  TODO:
  *      - Create end game conditions
@@ -19,7 +19,8 @@ using UnityEngine.UI;
  *          + Give up
  *          - Observe
  *          + Reload (in Shooter)
- *      READY TO TEST:
+ *      - Add tests
+ *      TEST:
  *          - 
  *  BUGS:
  *      - 
@@ -89,8 +90,9 @@ public class ShootingGallery : MonoBehaviour
         }
     }
 
-
     // TODO: FIX THIS CURSOR CODE OR UPDATE IT IN Shooter.cs
+    #region Cursor Display
+
     public void OnMouseEnter()
     {
         Cursor.SetCursor(crosshairs, Vector2.zero, CursorMode.Auto);
@@ -102,9 +104,11 @@ public class ShootingGallery : MonoBehaviour
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
     }
 
+    #endregion
+
     /** Loads the appropriate ending scene.
      * Call when game over conditions are met.
-     */ 
+     */
     public void EndGame()
     {
         if(target.GetHealth() <= 0)

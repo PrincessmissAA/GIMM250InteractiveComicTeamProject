@@ -9,15 +9,17 @@ using static UnityEngine.GraphicsBuffer;
 
 /** Control script for the Target in the Quantum Shooter mini-game.
  *  USE:
+ *      - Create a game area as the parent object for the target
  *      - Create a game object for the Target
  *      - Add this script to the Target game object
- *      - Create a game area as the parent object for the target
  *  TODO:
- *      - Code Oberve() method fuctionality
+ *      - NANCY: Code Oberve() method fuctionality
  *      - Add check for window resize during the game? (EstablishArea(), EstablishTarget())
  *      - Resize target based on window size (EstablishTarget())
  *          - Move call for EstablishTarget() inside EstablishArea()
- *      READY TO TEST:
+ *      - Add remaining tests
+ *      - Remove target image (should be free-moving non-visible collider only)
+ *      TEST:
  *          - Movement
  *              - Object moves? (Expected: yes) YES
  *              - Movement changes speed and direction intermittently? (Expected: yes) YES
@@ -36,7 +38,7 @@ using static UnityEngine.GraphicsBuffer;
  *      - Removed extraneous component requirements
  *      
  * @author Joe Shields
- * Last Updated: 16 Apr 24 @ 0945
+ * Last Updated: 23 Apr 24 @ 10:40a
  */
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -76,10 +78,11 @@ public class Target : MonoBehaviour
 
     //Observation Mechanic
     [SerializeField] private GameObject targetImage; // Used to access the sprite flip / visibility
-    private const float observationTime = 2f; // Sets the duration for which the display will be fixed after the Observe button is pressed
+    private const float OBSERVATION_TIME = 2f; // Sets the duration for which the display will be fixed after the Observe button is pressed
     private bool isObserved;
     private float observedX;
     private float observedY;
+    //NANCY TODO: Set constant baseline position for target image when not observed? Ensure using correct parent reference.
 
     void Start()
     {
@@ -128,33 +131,42 @@ public class Target : MonoBehaviour
     #region Control Methods
 
     /** Changes the X and Y position of the target based on the current speed in both directions
-     * Adjusts speed as needed to keep target in bounds
+     * Adjusts +/-speed as needed to keep target in bounds
      */
     private void Move()
     {
+        bool vectorChange = false;
+
         // Lateral bounds check
         if ((posX - width / 2) < (-gameWidth / 2))
         {
             speedX = Math.Abs(speedX);
-            vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
+            vectorChange = true;
         }
         else if ((posX + width / 2) > (gameWidth / 2))
         {
             speedX = -Math.Abs(speedX);
-            vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
+            vectorChange = true;
         }
         // Vertical bounds check
         if ((posY - height / 2) < (-gameHeight / 2))
         {
             speedY = Math.Abs(speedY);
-            vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
+            vectorChange = true;
         }
         else if ((posY + height / 2) > (gameHeight / 2))
         {
             speedY = -Math.Abs(speedY);
+            vectorChange = true;
+        }
+
+        // Change vector arrow display if needed
+        // NANCY TODO: Do not modify the display if the target is observed
+        if (vectorChange)
+        {
             vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
         }
-        
+
         // Move the target
         targetBody.velocity = new Vector2(speedX, speedY);
         
@@ -172,6 +184,8 @@ public class Target : MonoBehaviour
         speedX = RandomSpeed();
         speedY = RandomSpeed();
         changeDelay = RandomDelay();
+
+        // NANCY TODO: Do not modify the display if the target is observed
         speedDisplay.text = "Speed: " + GetSpeed(); // Update speed display
         vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector()); // Update velocity display (also updated in Move() when bounds are reached)
         Invoke("ChangeMovement", changeDelay);
@@ -188,12 +202,15 @@ public class Target : MonoBehaviour
         observedX = posX;
         observedY = posY;
 
-        //TODO: Add call to spriteRenderer and set appropriate flipX
+        // NANCY TODO: Move the target image to the observed position
+        // NANCY TODO: Hide the speed and vector arrow readouts
+        // NANCY TODO: Call resetIsObserved after appropriate delay
     }
 
     private void resetIsObserved()
     {
-
+        // NANCY TODO: Move the target image to the unobserved position
+        // NANCY TODO: Show the speed and vector arrow readouts
     }
 
     #endregion

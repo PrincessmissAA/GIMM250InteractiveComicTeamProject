@@ -7,25 +7,54 @@ using UnityEngine.UIElements;
 
 /** Control script for the shooter in the Quantum Shooter mini-game.
  *  USE:
- *      - Create a game object for the shooter's crosshairs
- *          - Include components: RigidBody2D, Animator, SpriteRenderer
+ *      x Create a game object for the shooter's crosshairs
+ *          x Include components: RigidBody2D, Animator, SpriteRenderer
  *      - Add this script to the shooter game object
+ *      - Add the game area object to the appropriate serialized field
  *  TODO:
- *      - Write Aim method to move the crosshairs (Cursor update in ShootingGallery.cs or sprite update here)
- *      - Finish Shoot() method that looks for target and only functions in game area
+ *      - Write Aim method to move the crosshairs
+ *          - Cursor update in ShootingGallery.cs or sprite update here
+ *              - Remove unused code when finished
+ *      - Finish Shoot() method 
+ *          - Check for hit
+ *          - Only functions in game area
  *      - Add banner display to indicate when reload is required or in-progress
  *      TEST:
- *          -
+ *          - UI text Updates
+ *              - Initiates with [6] shots (Expected: yes)
+ *              - Initiates with [2] reloads (Expected: yes)
+ *              - Shooting
+ *                  - Decrements shots when mouse is clicked (Expected: yes)
+ *                      - Only decrements when clicked in shooting area (Expected: yes)
+ *                      - Only decrements after appropriate delay (Expected: yes)
+ *                      - Decrements below zero (Expected: no)
+ *                  - Shooting animation triggers when valid shot (Expected: not implemented)
+ *              - Reloading
+ *                  - Decrements reloads when button is clicked (Expected: yes)
+ *                  - Restores shots to [6] after delay (Expected: yes)
+ *                  - Decrements below zero (Expected: no)
+ *                  - Reloading animation triggers when valid (Expected: not implemented)
+ *          - Crosshair rendering
+ *              - Render Crosshairs at mouse location (Expected: yes)
+ *              - Crosshairs follow mouse movement (Expected: yes)
+ *                  - Crosshairs follow mouse movement into side panel (Expected: no)
+ *          - Playtesting
+ *              - Is shot delay reasonable?
+ *              - Is reload delay reasonable?
+ *              - Is number of shots reasonable?
+ *              - Is number of reloads reasonable
+ *              (Note: (1 sec shot delay x 6 shots) x 3 + (3 sec reload time x 2 reloads) = 6 sec x3 + 6 sec = 24 sec. Game duration is 30 sec.)
  *  BUGS:
  *      - 
  *  CHANGES:
  *      - Added shooter-related display code from ShootingGallery.cs
  *              - Shots display only updates on shoot
  *              - Reload display only updates on reload
- *      
+ *      - Fixed bug where shooter could rapid-fire
+ *      - Made shot delay and reload time constants
  *      
  * @author Joe Shields
- * Last Updated: 16 Apr 24 @ 0945
+ * Last Updated: 23 Apr 24 @ 10:30a
  */
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -46,9 +75,9 @@ public class Shooter : MonoBehaviour
     private int shots;
     private const int MAX_RELOADS = 2;
     private int reloads;
-    private float shotDelay;
+    private const float SHOT_DELAY = 1f;
     private bool canShoot;
-    private float reloadTime;
+    private const float RELOAD_TIME = 3f;
     private bool isReloading;
 
 
@@ -62,9 +91,7 @@ public class Shooter : MonoBehaviour
         shotsDisplay.text = "Shots: " + GetShotsRemaining();
         reloads = MAX_RELOADS;
         reloadsDisplay.text = "Reloads: " + GetReloadsRemaining();
-        shotDelay = 1f;
         canShoot = true;
-        reloadTime = 3f;
         isReloading = false;
 
     }
@@ -90,7 +117,7 @@ public class Shooter : MonoBehaviour
      */
     public void Shoot()
     {
-        if(shots > 0 && !isReloading)
+        if(shots > 0 && !isReloading && canShoot)
         {
             shots--;
             shotsDisplay.text = "Shots: " + GetShotsRemaining();
@@ -101,7 +128,7 @@ public class Shooter : MonoBehaviour
             // TODO: call animation
             if(shots > 0)
             {
-                Invoke("ReadyNextShot", shotDelay);
+                Invoke("ReadyNextShot", SHOT_DELAY);
             }
             // TODO: else {//prompt for reload}?
         }
@@ -119,7 +146,7 @@ public class Shooter : MonoBehaviour
             reloadsDisplay.text = "Reloads: " + GetReloadsRemaining();
             isReloading = true;
             // TODO: call animation
-            Invoke("ReloadComplete", reloadTime);
+            Invoke("ReloadComplete", RELOAD_TIME);
         }
     }
 
