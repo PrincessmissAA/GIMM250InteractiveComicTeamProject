@@ -1,19 +1,53 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+
+/** Control script for the Quantum Shooter mini-game.
+ *  USE:
+ *      - Assign to game area object
+ *      - Correlate the serialized fields with their appropriate UI elements, game objects, and scene indexes
+ *  TODO:
+ *      - Create end game conditions
+ *          + Timer reaches 0
+ *          + Target hit points reaches 0
+ *          + Player gives up
+ *          - Player out of ammo?
+ *      - Create/assign methods for UI buttons
+ *          + Give up
+ *          - Observe
+ *          + Reload (in Shooter)
+ *      - Add tests
+ *      TEST:
+ *          - 
+ *  BUGS:
+ *      - 
+ *  CHANGES:
+ *      - Shifted code to improve performance. No longer updates HUD every frame:
+ *          - Moved target-related display code to Target.cs
+ *              - Health display only updates on health decrement
+ *              - Speed only updates on speed change
+ *              - Vector only updates on vector change
+ *          - Moved shooter-related display code to Shooter.cs
+ *              - Shots display only updates on shoot
+ *              - Reload display only updates on reload
+ *      
+ * @author Joe Shields
+ * Last Updated: 16 Apr 24 @ 0945
+ */
 
 public class ShootingGallery : MonoBehaviour
 {
     [SerializeField] private Shooter shooter;
+    [SerializeField] private Texture2D crosshairs;
     [SerializeField] private Target target;
-    [SerializeField] private GameObject vectorArrow;
 
     [SerializeField] private Text time;
-    [SerializeField] private Text targetSpeed;
-    [SerializeField] private Text shots;
-    [SerializeField] private Text reloads;
-    [SerializeField] private Text health;
+
+    [SerializeField] private int deadEndingSceneIndex;
+    [SerializeField] private int aliveEndingSceneIndex;
 
     private const int TIME_LIMIT = 30;
     private int timeRemaining;
@@ -23,22 +57,32 @@ public class ShootingGallery : MonoBehaviour
     {
         timeRemaining = TIME_LIMIT;
         CountDownTimer();
-        
     }
 
     // Update is called once per frame
     void Update()
     {
-        UpdateHUD();
+        if(Input.GetMouseButtonDown(0)) //TODO: Add check for inside game area
+        {
+            shooter.Shoot();
+            if (target.GetHealth() <= 0)
+            {
+                EndGame();
+            }
+        }
     }
 
+    /** Decrements timer, updates time display, and checks end game condition
+     * Calls itself once every second.
+     */
     private void CountDownTimer()
     {
         timeRemaining--;
-        
-        if(timeRemaining <= 0)
+        time.text = "Time: " + timeRemaining;
+
+        if (timeRemaining <= 0)
         {
-            // End Game
+            EndGame();
         }
         else
         {
@@ -46,14 +90,34 @@ public class ShootingGallery : MonoBehaviour
         }
     }
 
+    // TODO: FIX THIS CURSOR CODE OR UPDATE IT IN Shooter.cs
+    #region Cursor Display
 
-    private void UpdateHUD()
+    public void OnMouseEnter()
     {
-        time.text = "Time: " + timeRemaining;
-        targetSpeed.text = "Speed: " + target.GetSpeed();
-        vectorArrow.transform.rotation = Quaternion.Euler(0, 0, target.GetVector());
-        shots.text = "Shots: " + shooter.GetShotsRemaining();
-        reloads.text = "Reload: " + shooter.GetReloadsRemaining();
-        health.text = "HEALTH: " + target.GetHealth();
+        Cursor.SetCursor(crosshairs, Vector2.zero, CursorMode.Auto);
+        Debug.Log("Mouse over game area");
+    }
+
+    public void OnMouseExit()
+    {
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+    }
+
+    #endregion
+
+    /** Loads the appropriate ending scene.
+     * Call when game over conditions are met.
+     */
+    public void EndGame()
+    {
+        if(target.GetHealth() <= 0)
+        {
+            SceneManager.LoadScene(deadEndingSceneIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(aliveEndingSceneIndex);
+        }
     }
 }
