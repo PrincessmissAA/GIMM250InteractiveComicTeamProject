@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.ConstrainedExecution;
+using Unity.Collections;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UI;
@@ -83,7 +84,10 @@ public class Target : MonoBehaviour
     private float observedX;
     private float observedY;
     //NANCY TODO: Set constant baseline position for target image when not observed? Ensure using correct parent reference.
-
+    private float UNOBSERVED_X;
+    private float UNOBSERVED_Y;
+    private float arrowX;
+    private float arrowY;
     void Start()
     {
         targetBody = GetComponent<Rigidbody>();
@@ -92,7 +96,11 @@ public class Target : MonoBehaviour
         health.text = "HEALTH: " + GetHealth();
         EstablishGameArea(); // Gets the size of the game area and sets the BoxCollider dimensions to match
         EstablishTarget(); // Instantiates posX, posY, height, and width
+        UNOBSERVED_X = targetImage.GetComponent<RectTransform>().localPosition.x; // Gets the X position relative to the parent object (Game Area)
+        UNOBSERVED_Y = targetImage.GetComponent<RectTransform>().localPosition.y; // Gets the Y position relative to the parent object (Game Area)
         ChangeMovement(); // Instantiates speedX, speedY, and changeDelay. Initiates self-renewing ChangeMovement call cycle.
+        arrowX = vectorArrow.GetComponent<RectTransform>().localPosition.x;
+        arrowY = vectorArrow.GetComponent<RectTransform>().localPosition.y;
     }
 
     void Update()
@@ -162,7 +170,7 @@ public class Target : MonoBehaviour
 
         // Change vector arrow display if needed
         // NANCY TODO: Do not modify the display if the target is observed
-        if (vectorChange)
+        if (vectorChange && !isObserved)
         {
             vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector());
         }
@@ -186,8 +194,11 @@ public class Target : MonoBehaviour
         changeDelay = RandomDelay();
 
         // NANCY TODO: Do not modify the display if the target is observed
-        speedDisplay.text = "Speed: " + GetSpeed(); // Update speed display
+        if (!isObserved)
+        {
+         speedDisplay.text = "Speed: " + GetSpeed(); // Update speed display
         vectorArrow.transform.rotation = Quaternion.Euler(0, 0, GetVector()); // Update velocity display (also updated in Move() when bounds are reached)
+        }
         Invoke("ChangeMovement", changeDelay);
     }
 
@@ -201,7 +212,10 @@ public class Target : MonoBehaviour
         isObserved = true;
         observedX = posX;
         observedY = posY;
-
+        targetImage.transform.localPosition = new Vector3(observedX, observedY, 0);
+        speedDisplay.text = "Speed: ???";
+        vectorArrow.transform.localPosition = new Vector3(UNOBSERVED_X, UNOBSERVED_Y, 0);
+        Invoke("resetIsObserved", OBSERVATION_TIME);
         // NANCY TODO: Move the target image to the observed position
         // NANCY TODO: Hide the speed and vector arrow readouts
         // NANCY TODO: Call resetIsObserved after appropriate delay
@@ -209,6 +223,10 @@ public class Target : MonoBehaviour
 
     private void resetIsObserved()
     {
+        isObserved = false;
+        targetImage.transform.localPosition = new Vector3(UNOBSERVED_X, UNOBSERVED_Y,0);
+        speedDisplay.text = "Speed: " + GetSpeed(); // Update speed display
+        vectorArrow.transform.localPosition = new Vector3(arrowX, arrowY, 0);
         // NANCY TODO: Move the target image to the unobserved position
         // NANCY TODO: Show the speed and vector arrow readouts
     }
