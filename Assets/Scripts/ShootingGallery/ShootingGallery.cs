@@ -41,7 +41,6 @@ using UnityEngine.UI;
 public class ShootingGallery : MonoBehaviour
 {
     [SerializeField] private Shooter shooter;
-    [SerializeField] private Texture2D crosshairs;
     [SerializeField] private Target target;
 
     [SerializeField] private Text time;
@@ -89,22 +88,6 @@ public class ShootingGallery : MonoBehaviour
             Invoke("CountDownTimer", 1f);
         }
     }
-
-    // TODO: FIX THIS CURSOR CODE OR UPDATE IT IN Shooter.cs
-    #region Cursor Display
-
-    public void OnMouseEnter()
-    {
-        Cursor.SetCursor(crosshairs, Vector2.zero, CursorMode.Auto);
-        Debug.Log("Mouse over game area");
-    }
-
-    public void OnMouseExit()
-    {
-        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-    }
-
-    #endregion
 
     /** Loads the appropriate ending scene.
      * Call when game over conditions are met.
