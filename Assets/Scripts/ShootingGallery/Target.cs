@@ -41,14 +41,14 @@ using static UnityEngine.GraphicsBuffer;
  * Last Updated: 23 Apr 24 @ 10:40a
  */
 
-[RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(BoxCollider2D))]
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(BoxCollider))]
 
 public class Target : MonoBehaviour
 {
     //Target Object
-    private Rigidbody2D targetBody; // Used to move the target
-    private BoxCollider2D targetCollider; // Detects collisions with the boundary
+    private Rigidbody targetBody; // Used to move the target
+    private BoxCollider targetCollider; // Detects collisions with the boundary
     
 
     //Target Stats
@@ -86,11 +86,11 @@ public class Target : MonoBehaviour
 
     void Start()
     {
-        targetBody = GetComponent<Rigidbody2D>();
+        targetBody = GetComponent<Rigidbody>();
         isObserved = false;
         hitPoints = MAX_HIT_POINTS; // Sets the hit point tracker
         health.text = "HEALTH: " + GetHealth();
-        EstablishGameArea(); // Gets the size of the game area and sets the BoxCollider2D dimensions to match
+        EstablishGameArea(); // Gets the size of the game area and sets the BoxCollider dimensions to match
         EstablishTarget(); // Instantiates posX, posY, height, and width
         ChangeMovement(); // Instantiates speedX, speedY, and changeDelay. Initiates self-renewing ChangeMovement call cycle.
     }
@@ -102,7 +102,7 @@ public class Target : MonoBehaviour
 
     #region Instantiation methods
 
-    /** Gets/sets the dimensions of the game area and its BoxCollider2D 
+    /** Gets/sets the dimensions of the game area and its BoxCollider
      * Call in Start()
      * TODO: Call on window resize
      */
@@ -110,7 +110,7 @@ public class Target : MonoBehaviour
     {
         gameHeight = gameArea.GetComponent<RectTransform>().rect.yMax - gameArea.GetComponent<RectTransform>().rect.yMin; // Gets the height of the game window
         gameWidth = gameArea.GetComponent<RectTransform>().rect.xMax - gameArea.GetComponent<RectTransform>().rect.xMin; // Gets the width of the game window
-        gameArea.GetComponent<BoxCollider2D>().size.Set(gameWidth, gameHeight);
+        gameArea.GetComponent<BoxCollider>().size.Set(gameWidth, gameHeight, 0f);
     }
 
     /** Gets the position and dimensions of the target's box collider
@@ -122,8 +122,8 @@ public class Target : MonoBehaviour
     {
         posX = GetComponent<RectTransform>().localPosition.x; // Gets the X position relative to the parent object (Game Area)
         posY = GetComponent<RectTransform>().localPosition.y; // Gets the Y position relative to the parent object (Game Area)
-        height = GetComponent<BoxCollider2D>().bounds.size.y; // Gets the target height
-        width = GetComponent<BoxCollider2D>().bounds.size.x; // Gets the target width
+        height = GetComponent<BoxCollider>().bounds.size.y; // Gets the target height
+        width = GetComponent<BoxCollider>().bounds.size.x; // Gets the target width
     }
 
     #endregion

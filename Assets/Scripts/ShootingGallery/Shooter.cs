@@ -57,19 +57,21 @@ using UnityEngine.UIElements;
  * Last Updated: 23 Apr 24 @ 10:30a
  */
 
-[RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(BoxCollider))]
 [RequireComponent(typeof(Animator))]
 
 public class Shooter : MonoBehaviour
 {
     [SerializeField] GameObject gameArea;
+    [SerializeField] Target target;
     [SerializeField] private Text shotsDisplay;
     [SerializeField] private Text reloadsDisplay;
-    private Rigidbody2D aimBody; // Used to move the crosshairs
-    private SpriteRenderer aimSprite; // Show's the crosshairs
+    private Rigidbody aimBody; // Used to move the crosshairs
+    private BoxCollider shotArea; // Show's the crosshairs
     private Animator aimAnimator; // call to shooting/reloading animation (2D graphics should not require separate projectile animation)
-    
+    private Vector2 mousePosition;
+
     // Gun Attributes
     private const int MAX_SHOTS = 6;
     private int shots;
@@ -79,13 +81,15 @@ public class Shooter : MonoBehaviour
     private bool canShoot;
     private const float RELOAD_TIME = 3f;
     private bool isReloading;
+    private bool isAiming;
+    private bool overTarget;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        aimBody = GetComponent<Rigidbody2D>();
-        aimSprite = GetComponent<SpriteRenderer>();
+        aimBody = GetComponent<Rigidbody>();
+        shotArea = GetComponent<BoxCollider>();
         aimAnimator = GetComponent<Animator>();
         shots = MAX_SHOTS;
         shotsDisplay.text = "Shots: " + GetShotsRemaining();
@@ -93,21 +97,53 @@ public class Shooter : MonoBehaviour
         reloadsDisplay.text = "Reloads: " + GetReloadsRemaining();
         canShoot = true;
         isReloading = false;
-
+        isAiming = false;
+        overTarget = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        Aim();
     }
 
     #region Control Methods
 
+    /**Tracks mouse position and moves crosshairs along with it.
+     * TODO: Stop tracking when mouse is outside of the gallery area
+     */
     public void Aim()
     {
-        //MouseMoveEvent
+        mousePosition = Input.mousePosition;
+        transform.position = Vector2.Lerp(transform.position, mousePosition, 1f);
+    }
 
+
+    /**Detects if Cursor is within the bounds of the shooting gallery*/
+    public void OnTriggerEnter(Collider collision)
+    {
+        if(collision.gameObject.CompareTag("Gallery"))
+        {
+            isAiming = true;
+        }
+
+        if(collision.gameObject.CompareTag("Target"))
+        {
+            overTarget = true;
+        }
+    }
+    /**Detects if Cursor leaves the bounds of the shooting gallery*/
+    public void OnTriggerExit(Collider collision)
+    {
+        if (collision.gameObject.CompareTag("Gallery"))
+        {
+            isAiming = false;
+        }
+
+        if (collision.gameObject.CompareTag("Target"))
+        {
+            overTarget = false;
+        }
     }
 
     /** Checks if shooter can shoot.
@@ -117,13 +153,16 @@ public class Shooter : MonoBehaviour
      */
     public void Shoot()
     {
-        if(shots > 0 && !isReloading && canShoot)
+        if(shots > 0 && !isReloading && canShoot && isAiming)
         {
             shots--;
             shotsDisplay.text = "Shots: " + GetShotsRemaining();
             canShoot = false;
 
-            // TODO: check for hit
+            if(overTarget)
+            {
+                target.DamageTarget();
+            }
             
             // TODO: call animation
             if(shots > 0)
