@@ -6,6 +6,9 @@ TagManager:
   tags:
   - vertical
   - horizontal
+  - Gallery
+  - Target
+  - Shooter
   layers:
   - Default
   - TransparentFX
