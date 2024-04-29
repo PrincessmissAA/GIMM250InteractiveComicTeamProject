@@ -8,4 +8,19 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MazeGame.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/Panels14-18.unity
+    guid: 70d5a87a862c0954aa190138cbd1a74b
+  - enabled: 1
+    path: Assets/Scenes/Panels1-13.unity
+    guid: 1b2d5c64c403d424886d2a4a57086644
+  - enabled: 1
+    path: Assets/Scenes/ShootingGallery.unity
+    guid: 171b2cb8350171f46bcf479503a2a2cb
+  - enabled: 1
+    path: Assets/Scenes/AlivePanels19-22.unity
+    guid: 40d9bcf8cf3216b4b85aedf0058cf93a
+  - enabled: 1
+    path: Assets/Scenes/DeadPanels19-22.unity
+    guid: eb49476b24e4bed44965027459eef539
   m_configObjects: {}
