@@ -33,9 +33,10 @@ using UnityEngine.UI;
  *          - Moved shooter-related display code to Shooter.cs
  *              - Shots display only updates on shoot
  *              - Reload display only updates on reload
+ *          - Added in the index for the ending scenes
  *      
- * @author Joe Shields
- * Last Updated: 16 Apr 24 @ 0945
+ * @author Joe Shields, Avy Wilford
+ * Last Updated: 29 Apr 24 @ 1532
  */
 
 public class ShootingGallery : MonoBehaviour
@@ -45,8 +46,11 @@ public class ShootingGallery : MonoBehaviour
 
     [SerializeField] private Text time;
 
-    [SerializeField] private int deadEndingSceneIndex;
-    [SerializeField] private int aliveEndingSceneIndex;
+    //[SerializeField] public int deadEndingSceneIndex;
+    //[SerializeField] public int aliveEndingSceneIndex;
+
+    public int deadEndingSceneIndex = 5;
+    public int aliveEndingSceneIndex = 4;
 
     private const int TIME_LIMIT = 30;
     private int timeRemaining;
