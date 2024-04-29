@@ -38,7 +38,7 @@ using static UnityEngine.GraphicsBuffer;
  *      - Changed plan from target sprite to independent raw image
  *      - Removed extraneous component requirements
  *      
- * @author Joe Shields
+ * @author Joe Shields, Nancy Gonzalez
  * Last Updated: 23 Apr 24 @ 10:40a
  */
 
