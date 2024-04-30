@@ -10,7 +10,6 @@ public class Player : MonoBehaviour
     public JoystickMovement joystickMovement;
 
     public float moveSpeed = 5f; // Movement speed
-    public float moveSpeed2 = -5f;
     public Rigidbody2D rb; // Reference to Rigidbody2D component (assign in inspector)
 
     void Start()

@@ -8,21 +8,26 @@ using UnityEngine.UI;
 public class Controller : MonoBehaviour
 
 {
+    [SerializeField] private Text p1Inventory;
+    private string inventoryDisplay;
+    private List<string> inventory;
+    private const int MAX_ITEMS = 4;
     //old item management system:
-    public List<string> items;
+    
 
     public JoystickMovement joystickMovement;
 
-    public float moveSpeed = 5f; // Movement speed
-    public float moveSpeed2 = -5f;
     public Rigidbody2D rb; // Reference to Rigidbody2D component (assign in inspector)
-    private Inventory inventory; //Reference to the inventory class
+    
 
     //[SerializeField] private UIInventory uiInventory;// Assign in inspector on both players
     
     void Start()
     {
-        items = new List<string>();
+        inventoryDisplay = "Inventory: \n*\n*\n*\n*";
+        p1Inventory.text = inventoryDisplay;
+        inventory = new List<string>();
+        
     }
     
     
@@ -31,7 +36,7 @@ public class Controller : MonoBehaviour
         inventory = new Inventory();
     }*/
 
-    public void Move(float horizontalInput, float verticalInput)
+    /*public void Move(float horizontalInput, float verticalInput)
     {
        
         // Combine input into a movement direction vector
@@ -53,26 +58,35 @@ public class Controller : MonoBehaviour
         rb.MovePosition(rb.position + movement * moveSpeed2 * Time.fixedDeltaTime);
 
         
-    }
+    }*/
 
     //Old collection function. Moving on to new inventory code:
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        // Check if colliding with a collectable object (using tag)
-        if (collision.gameObject.CompareTag("Collectable"))
-        {
-            // Handle item collection logic (e.g., destroy, add to inventory)
-            
-            string itemType = collision.gameObject.GetComponent<Item>().itemType;
-            print(itemType + " Collected!");
-            items.Add(itemType);
-            print("Inventory Count:" + items.Count);
-            Destroy(collision.gameObject); // Example: Destroy collected item
-            
-        }
+        
+        inventory.Add(collision.gameObject.tag);
+        UpdateInventoryDisplay();
+        Destroy(collision.gameObject);
+    
     }
-   
+
+    public void UpdateInventoryDisplay()
+    {
+        inventoryDisplay = "Inventory:";
+
+        foreach (string item in inventory)
+        {
+            inventoryDisplay += "\n" + item;
+        }
+        for (int i = inventory.Count; i < MAX_ITEMS; i ++)
+        {
+            inventoryDisplay += "\n*";
+        }
+
+        p1Inventory.text = inventoryDisplay;
+    }
+
 
 
 }
