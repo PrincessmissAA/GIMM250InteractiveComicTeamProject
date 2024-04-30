@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     public JoystickMovement joystickMovement;
 
     public float moveSpeed = 5f; // Movement speed
+    [SerializeField] private float _rotationSpeed;
     public Rigidbody2D rb; // Reference to Rigidbody2D component (assign in inspector)
 
     void Start()
@@ -19,6 +20,7 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
+        
         if (joystickMovement.joystickVec.y != 0)
         {
             rb.velocity = new Vector2(joystickMovement.joystickVec.x * moveSpeed, joystickMovement.joystickVec.y * moveSpeed);
@@ -27,12 +29,15 @@ public class Player : MonoBehaviour
         {
             rb.velocity = Vector2.zero;
         }
-        /*// Get horizontal and vertical input from keyboard (or alternatives)
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical");
+        
+        if (rb.velocity != Vector2.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(transform.forward, rb.velocity);
+            Quaternion rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
 
-        // Call Move method from Controller script
-        movement.Move(horizontalInput, verticalInput);*/
+            rb.MoveRotation(rotation);
+        }
     }
+    
 }
 

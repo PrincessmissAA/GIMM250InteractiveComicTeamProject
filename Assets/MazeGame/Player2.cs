@@ -29,6 +29,7 @@ public class Player2 : MonoBehaviour
         {
             rb.velocity = Vector2.zero;
         }
+
         /*// Get horizontal and vertical input from keyboard (or alternatives)
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");

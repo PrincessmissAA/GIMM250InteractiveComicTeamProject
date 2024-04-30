@@ -25,11 +25,10 @@ public class Controller : MonoBehaviour
     void Start()
     {
         inventoryDisplay = "Inventory: \n*\n*\n*\n*";
-        p1Inventory.text = inventoryDisplay;
         inventory = new List<string>();
         
     }
-    
+
     
     /*private void Awake()
     {
