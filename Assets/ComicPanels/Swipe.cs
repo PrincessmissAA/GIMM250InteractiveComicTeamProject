@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//Got this from a tutorial on Solo Game Dev
+//This is the swipe mechanic for the comic panels so that it is able to run through
+//Author Avy Wilford
+
 public class Swipe : MonoBehaviour
 {
     //public Sprite ComicPanel;
@@ -23,7 +27,7 @@ public class Swipe : MonoBehaviour
     void Update()
     {
         
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) //Tracks where the person touches the screen at
         {
             startTouchPosition = Input.GetTouch(0).position;
         }
@@ -47,7 +51,7 @@ public class Swipe : MonoBehaviour
 
     }
 
-    private void PreviousPage()
+    private void PreviousPage() //Loads the previous screen
     {
 
         PageNumber--;
@@ -55,7 +59,7 @@ public class Swipe : MonoBehaviour
         PageImage.sprite = Numbers[PageNumber];
     }
 
-    private void NextPage()
+    private void NextPage() //Loads the next screen
     {
         PageNumber++;
         //SceneManager.LoadScene(PageNumber);
