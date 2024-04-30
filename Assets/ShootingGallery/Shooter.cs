@@ -65,6 +65,8 @@ public class Shooter : MonoBehaviour
 {
     [SerializeField] GameObject gameArea;
     [SerializeField] Target target;
+    [SerializeField] GameObject gunImage;
+    [SerializeField] GameObject shootingImage;
     [SerializeField] private Text shotsDisplay;
     [SerializeField] private Text reloadsDisplay;
     private Rigidbody aimBody; // Used to move the crosshairs
@@ -84,6 +86,11 @@ public class Shooter : MonoBehaviour
     private bool isAiming;
     private bool overTarget;
 
+    private float gunX;
+    private float gunY;
+    private float offscreenX;
+    private float offscreenY;
+
 
     // Start is called before the first frame update
     void Start()
@@ -99,6 +106,10 @@ public class Shooter : MonoBehaviour
         isReloading = false;
         isAiming = false;
         overTarget = false;
+        gunX = gunImage.GetComponent<RectTransform>().localPosition.x;
+        gunY = gunImage.GetComponent<RectTransform>().localPosition.y;
+        offscreenX = shootingImage.GetComponent<RectTransform>().localPosition.x;
+        offscreenY = shootingImage.GetComponent<RectTransform>().localPosition.y;
     }
 
     // Update is called once per frame
@@ -158,8 +169,11 @@ public class Shooter : MonoBehaviour
             shots--;
             shotsDisplay.text = "Shots: " + GetShotsRemaining();
             canShoot = false;
+            shootingImage.transform.localPosition = new Vector3(gunX, gunY, 0);
+            gunImage.transform.localPosition = new Vector3(offscreenX, offscreenY, 0);
+            Invoke("ResetShootingImage", SHOT_DELAY / 2);
 
-            if(overTarget)
+            if (overTarget)
             {
                 target.DamageTarget();
             }
@@ -200,6 +214,11 @@ public class Shooter : MonoBehaviour
     private void ReadyNextShot()
     {
         canShoot = true;
+    }
+    private void ResetShootingImage()
+    {
+        gunImage.transform.localPosition = new Vector3(gunX, gunY, 0);
+        shootingImage.transform.localPosition = new Vector3(offscreenX, offscreenY, 0);
     }
 
     /** Completes process of reloading.

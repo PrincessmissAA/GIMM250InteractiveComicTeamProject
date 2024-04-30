@@ -88,6 +88,7 @@ public class Target : MonoBehaviour
     private float UNOBSERVED_Y;
     private float arrowX;
     private float arrowY;
+
     void Start()
     {
         targetBody = GetComponent<Rigidbody>();
