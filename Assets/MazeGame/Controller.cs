@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Controller : MonoBehaviour
 
 {
+    //Added in scene change, Author of scene change is Avy Wilford
+    [SerializeField] private int ComicPanelScene14;
+
     [SerializeField] private Text p1Inventory;
     private string inventoryDisplay;
     private List<string> inventory;
@@ -82,12 +86,14 @@ public class Controller : MonoBehaviour
         for (int i = inventory.Count; i < MAX_ITEMS; i ++)
         {
             inventoryDisplay += "\n*";
+            if (i == MAX_ITEMS - 1)
+            {
+                SceneManager.LoadScene(ComicPanelScene14);
+            }
         }
 
         p1Inventory.text = inventoryDisplay;
     }
-
-
 
 }
 
