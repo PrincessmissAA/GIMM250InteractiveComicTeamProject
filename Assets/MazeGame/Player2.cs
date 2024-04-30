@@ -11,7 +11,6 @@ public class Player2 : MonoBehaviour
 
     private Controller movement; // Reference to Controller script
     public float moveSpeed = 5f; // Movement speed
-    public float moveSpeed2 = -5f;
     public Rigidbody2D rb; // Reference to Rigidbody2D component (assign in inspector)
 
 
@@ -24,7 +23,7 @@ public class Player2 : MonoBehaviour
     {
         if (joystickMovement.joystickVec.y != 0)
         {
-            rb.velocity = new Vector2(joystickMovement.joystickVec.x * moveSpeed2, joystickMovement.joystickVec.y * moveSpeed2);
+            rb.velocity = new Vector2(joystickMovement.joystickVec.x * moveSpeed, joystickMovement.joystickVec.y * moveSpeed);
         }
         else
         {
